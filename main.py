@@ -2,9 +2,12 @@ import os
 import csv
 import pandas as pd
 
+NUM_TESTER = 31
+NUM_QUESTION = 3
+
 # Global variables
-time_taken = [[] for _ in range(31)]
-average_reading_time = [0.0, 0.0, 0.0]  # For 3 questions
+t_i_j = [[] for _ in range(31)] # t_i_j
+t_i = [0.0, 0.0, 0.0]  # t_i
 d_i_j = [[] for _ in range(31)]  # Initialize d_i_j as a 2D list
 d_i = [0.0 for _ in range(31)]  # Initialize d_i as a list for each tester
 k = 2  # Global variable k set to 2
@@ -25,65 +28,50 @@ def calculate_time_taken(row_count):
 
 def calculate_average_reading_time():
     """Calculate the average reading time for each question across all participants."""
-    global average_reading_time
-    num_testers = len(time_taken)
-    num_questions = len(time_taken[0]) if num_testers > 0 else 0
-
-    for question_idx in range(num_questions):
-        total_time = sum(time_taken[tester_id][question_idx] for tester_id in range(num_testers))
-        average_reading_time[question_idx] = total_time / num_testers if num_testers > 0 else 0
+    global t_i, t_i_j
+    for question_idx in range(NUM_QUESTION):
+        total_time = sum(t_i_j[tester_id][question_idx] for tester_id in range(NUM_TESTER))
+        t_i[question_idx] = total_time / NUM_TESTER
 
 def calculate_d_i_j():
     """Calculate d_i_j for each tester and question based on the given formula."""
-    global d_i_j
-    num_testers = len(time_taken)
-    num_questions = len(time_taken[0]) if num_testers > 0 else 0
-
-    for tester_id in range(num_testers):
-        for question_idx in range(num_questions):
-            if time_taken[tester_id][question_idx] != 0:
-                d_i_j_value = (time_taken[tester_id][question_idx] - average_reading_time[question_idx]) / time_taken[tester_id][question_idx]
+    global t_i_j, t_i, d_i_j
+    for tester_id in range(NUM_TESTER):
+        for question_idx in range(NUM_QUESTION):
+            if t_i_j[tester_id][question_idx] != 0:
+                d_i_j_value = (t_i_j[tester_id][question_idx] - t_i[question_idx]) / t_i_j[tester_id][question_idx]
             else:
                 d_i_j_value = 0  # Handle division by zero if time_taken is zero
             d_i_j[tester_id].append(d_i_j_value)
 
 def calculate_d_i():
     """Calculate d_i for each tester as the absolute average of d_i_j."""
-    global d_i
-    num_testers = len(d_i_j)
-    num_questions = len(d_i_j[0]) if num_testers > 0 else 0
-
-    for tester_id in range(num_testers):
+    global d_i_j, d_i
+    for tester_id in range(NUM_TESTER):
         total_d_i_j = sum(d_i_j[tester_id])
-        d_i[tester_id] = total_d_i_j / num_questions if num_questions > 0 else 0
+        d_i[tester_id] = total_d_i_j / NUM_QUESTION
 
 def calculate_l_i_j():
     """Calculate l_i_j based on the conditions provided."""
-    global l_i_j
-    num_testers = len(time_taken)
-    num_questions = len(time_taken[0]) if num_testers > 0 else 0
-
-    for tester_id in range(num_testers):
-        for question_idx in range(num_questions):
-            t_i_j = time_taken[tester_id][question_idx]
-            t_j = average_reading_time[question_idx]
+    global t_i, t_i_j, a_i_j, d_i, l_i_j
+    for tester_id in range(NUM_TESTER):
+        for question_idx in range(NUM_QUESTION):
+            t_i_j_val = t_i_j[tester_id][question_idx]
+            t_j_val = t_i[question_idx]
             a_i_j_val = a_i_j[tester_id][question_idx]
             d_i_val = d_i[tester_id]
 
-            if a_i_j_val == 0 and t_i_j < (t_j * (1 + d_i_val) / k):
-                print(f"t_i_j: {t_i_j}")
-                print(f"(t_j * (1 + d_i_val) / k): {t_j * (1 + d_i_val) / k}")
+            if a_i_j_val == 0 and t_i_j_val < (t_j_val * (1 + d_i_val) / k):
                 l_i_j[tester_id][question_idx] = 2
-            elif a_i_j_val == 1 and t_i_j > (t_j * (1 + d_i_val)):
+            elif a_i_j_val == 1 and t_i_j_val > (t_j_val * (1 + d_i_val)):
                 l_i_j[tester_id][question_idx] = 1
-            elif a_i_j_val == 0 and t_i_j >= (t_j * (1 + d_i_val) / k):
+            elif a_i_j_val == 0 and t_i_j_val >= (t_j_val * (1 + d_i_val) / k):
                 l_i_j[tester_id][question_idx] = 1
             else:
                 l_i_j[tester_id][question_idx] = 0
 
 def count_labels():
     """Count occurrences of labels 0, 1, and 2 in l_i_j."""
-    global l_i_j
     label_counts = {0: 0, 1: 0, 2: 0}
 
     for labels in l_i_j:
@@ -101,13 +89,12 @@ def save_l_i_j_to_csv(file_path):
             writer.writerow([tester_id] + labels)
 
 def main():
-    global time_taken, a_i_j
+    global t_i_j, a_i_j
     base_dir = r'C:\Users\lehoa\Downloads\data-20240513T042351Z-001\data'  # Replace with the path to your base directory
     question_folders = ['P2', 'P3', 'P4']
-    num_testers = 31
-    row_counts = [[] for _ in range(num_testers)]  # Initialize a 2D list for row counts
+    row_counts = [[] for _ in range(NUM_TESTER)]  # Initialize a 2D list for row counts
 
-    for tester_id in range(num_testers):
+    for tester_id in range(NUM_TESTER):
         for question_folder in question_folders:
             file_name = f"User {tester_id}_all_gaze.csv"
             folder_path = os.path.join(base_dir, question_folder)
@@ -115,11 +102,11 @@ def main():
             if os.path.isfile(file_path):
                 row_count = count_rows_in_csv(file_path)
                 row_counts[tester_id].append(row_count)
-                time_taken[tester_id].append(calculate_time_taken(row_count))
+                t_i_j[tester_id].append(calculate_time_taken(row_count))
             else:
                 print(f"File not found: {file_path}")
                 row_counts[tester_id].append(0)  # If file does not exist, append 0
-                time_taken[tester_id].append(0)  # If file does not exist, append 0
+                t_i_j[tester_id].append(0)  # If file does not exist, append 0
 
     calculate_average_reading_time()
     calculate_d_i_j()
