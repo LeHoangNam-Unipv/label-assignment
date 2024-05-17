@@ -51,15 +51,18 @@ def calculate_d_i():
         total_d_i_j = sum(d_i_j[tester_id])
         d_i[tester_id] = total_d_i_j / NUM_QUESTION
 
+
+
 def calculate_l_i_j():
     """Calculate l_i_j based on the conditions provided."""
-    global t_i, t_i_j, a_i_j, d_i, l_i_j
+    global t_i, t_i_j, a_i_j, d_i, l_i_j, d_i_j
     for tester_id in range(NUM_TESTER):
         for question_idx in range(NUM_QUESTION):
             t_i_j_val = t_i_j[tester_id][question_idx]
             t_j_val = t_i[question_idx]
             a_i_j_val = a_i_j[tester_id][question_idx]
-            d_i_val = d_i[tester_id]
+            #d_i_val = d_i[tester_id]
+            d_i_val = d_i_j[tester_id][question_idx]
 
             if a_i_j_val == 0 and t_i_j_val < (t_j_val * (1 + d_i_val) / k):
                 l_i_j[tester_id][question_idx] = 2
@@ -111,6 +114,7 @@ def main():
     calculate_average_reading_time()
     calculate_d_i_j()
     calculate_d_i()
+
 
     answers_dir = r'C:\Users\lehoa\Downloads\data-20240513T042351Z-001\data\result'  # Replace with the path to the directory containing the answers CSV file
     answers_file = 'test result.xlsx'  # Name of the answers excel file
