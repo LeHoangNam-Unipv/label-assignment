@@ -179,7 +179,7 @@ def calculate_l_i_j(a_i_j, t_i_j, invalid_testers_with_questions, uf_cj):
             if (tester_id, question_idx) in invalid_questions_set:
                 l_i_j[tester_id, question_idx] = "I"
             else:
-                if a_i_j[tester_id, question_idx] != 1 and t_i_j[tester_id, question_idx] > uf_cj[question_idx]:
+                if a_i_j[tester_id, question_idx] == 1 and t_i_j[tester_id, question_idx] > uf_cj[question_idx]:
                     l_i_j[tester_id, question_idx] = "U"
                 elif a_i_j[tester_id, question_idx] == 0:
                     l_i_j[tester_id, question_idx] = "U"
@@ -190,7 +190,6 @@ def calculate_l_i_j(a_i_j, t_i_j, invalid_testers_with_questions, uf_cj):
 
 
 def main():
-
 
     t_i_j = read_csv_gaze_to_extract_reading_time(base_dir, question_folders)
 
