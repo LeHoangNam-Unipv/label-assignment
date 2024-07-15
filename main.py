@@ -4,7 +4,8 @@ import pandas as pd
 
 NUM_TESTER = 31
 NUM_QUESTION = 3
-k = 2  # Global variable k set to 2
+k = 0.5  # Global variable k set to 2
+alpha = 1.5
 
 def count_rows_in_csv(file_path):
     """Count the number of rows in a CSV file, excluding the header."""
@@ -70,7 +71,7 @@ def calculate_l_i_j(a_i_j, t_i_j, t_j, d_i, d_i_j, k):
             d_i_val = d_i[tester_id]
             #d_i_val = d_i_j[tester_id][question_idx]
 
-            if a_i_j_val == 0 and t_i_j_val < (t_j_val * (1 + d_i_val) / k):
+            if a_i_j_val == 0 and t_i_j_val < (t_j_val * 0.5):
                 l_i_j[tester_id][question_idx] = 2
             elif a_i_j_val == 1 and t_i_j_val > (t_j_val * (1 + d_i_val)):
                 l_i_j[tester_id][question_idx] = 1
@@ -94,11 +95,11 @@ def calculate_l_i_j_with_correct_answer(a_i_j, t_i_j, t_j, t_j_correct_answer, d
             d_i_val = d_i[tester_id]
             #d_i_val = d_i_j[tester_id][question_idx]
 
-            if a_i_j_val == 0 and t_i_j_val < (t_j_val * (1 + d_i_val) / k):
+            if a_i_j_val == 0 and t_i_j_val < (t_j_val * k):
                 l_i_j[tester_id][question_idx] = 2
-            elif a_i_j_val == 1 and t_i_j_val > (t_j_correct_answer_val * (1 + d_i_val)):
+            elif a_i_j_val == 1 and t_i_j_val > t_j_correct_answer_val * alpha:
                 l_i_j[tester_id][question_idx] = 1
-            elif a_i_j_val == 0 and t_i_j_val >= (t_j_correct_answer_val * (1 + d_i_val) / k):
+            elif a_i_j_val == 0 and t_i_j_val >= (t_j_val * k):
                 l_i_j[tester_id][question_idx] = 1
             else:
                 l_i_j[tester_id][question_idx] = 0
@@ -172,8 +173,8 @@ def main():
     d_i_j = calculate_d_i_j(t_j, t_i_j)
     d_i = calculate_d_i(d_i_j)
 
-    l_i_j = calculate_l_i_j(a_i_j, t_i_j, t_j, d_i, d_i_j, k)
-    #l_i_j = calculate_l_i_j_with_correct_answer(a_i_j, t_i_j, t_j, t_j_correct_answer, d_i, d_i_j, k)
+    #l_i_j = calculate_l_i_j(a_i_j, t_i_j, t_j, d_i, d_i_j, k)
+    l_i_j = calculate_l_i_j_with_correct_answer(a_i_j, t_i_j, t_j, t_j_correct_answer, d_i, d_i_j, k)
 
     # Save l_i_j to a CSV file
     save_l_i_j_to_csv("l_i_j.csv", l_i_j)
